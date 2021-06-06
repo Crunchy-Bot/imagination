@@ -19,6 +19,7 @@ from models import *
 BASE_IMAGE_URL = "https://images.crunchy.gg/content"
 API_KEY = os.getenv("IMAGE_API_KEY")
 
+
 pool = ThreadPoolExecutor()
 session: typing.Optional[aiohttp.ClientSession] = None
 app = FastAPI(

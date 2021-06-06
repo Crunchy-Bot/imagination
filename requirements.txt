@@ -2,3 +2,4 @@ fastapi~=0.65.1
 pydantic~=1.8.2
 pillow~=8.2.0
 aiohttp
+uvicorn
