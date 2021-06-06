@@ -18,6 +18,8 @@ from models import *
 
 BASE_IMAGE_URL = "https://images.crunchy.gg/content"
 API_KEY = os.getenv("IMAGE_API_KEY")
+HOST = os.getenv("HOST", "127.0.0.1")
+PORT = int(os.getenv("PORT", 5000))
 
 
 pool = ThreadPoolExecutor()
@@ -145,4 +147,4 @@ def create_profile():
 
 
 if __name__ == '__main__':
-    uvicorn.run("main:app")
+    uvicorn.run("main:app", host=HOST, port=PORT)
