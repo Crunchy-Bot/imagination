@@ -1,20 +1,19 @@
 from render.utils import wrap_and_join
 from render.canvas import (
     get_canvas,
-    CANVAS_CRUNCHYROLL_COLOUR,
+    RGBA,
     CANVAS_SIZE,
-    CANVAS_GRAY_300,
-    CANVAS_GRAY_400,
-    CANVAS_GRAY_700,
-    TextSemibold,
-    TextNormal,
+    CANVAS_CRUNCHYROLL_COLOUR,
+    CANVAS_WHITE,
+    CANVAS_BASE_COLOUR,
+
+    TextBold,
     ITextNormal,
-    ITextSemibold,
+    TextNormal, ITextSemibold,
 )
 
 from PIL import ImageDraw, Image
 from io import BytesIO
-from textwrap import shorten
 from datetime import datetime
 
 STAR_DELTA = 20
@@ -26,77 +25,89 @@ def render_news(
     author: str,
     thumbnail: BytesIO,
     description: str,
+    background_colour: RGBA = CANVAS_BASE_COLOUR,
+    text_colour: RGBA = CANVAS_WHITE,
+    border_colour: RGBA = CANVAS_CRUNCHYROLL_COLOUR,
 ) -> BytesIO:
-    img = get_canvas()
 
-    # title adjustments
-    max_width = int(CANVAS_SIZE.width * 0.90)
-    w, _ = TextSemibold(size=20).getsize(title)
-    avg_width_per_char = w / len(title)
-    width = int(max_width / avg_width_per_char)
-    title_text = shorten(title, width=width)
-    w, h = TextSemibold(size=20).getsize_multiline(title_text)
-
-    canvas = ImageDraw.Draw(img)
-    canvas.multiline_text((20, 15), title_text, font=TextSemibold(size=20))
-
-    # title border
-    canvas.line(
-        (20, 22 + h, 20 + w, 22 + h),
-        fill=CANVAS_CRUNCHYROLL_COLOUR,
-        width=2,
-    )
-
-    # summary
-    font = ITextNormal(size=16)
-    summary = f"\"{summary}"
-    w, _ = font.getsize(summary)
-    avg_width_per_char = w / len(summary)
-    width = int(max_width / avg_width_per_char)
-    summary = wrap_and_join(summary, width)
-    canvas.multiline_text((20, h + 35), f"{summary}\"", fill=CANVAS_GRAY_400, font=font)
+    PADDING = 5
+    img = get_canvas(colour=background_colour)
 
     # thumbnail
-    thumb = Image.open(thumbnail)
-    thumb = thumb.resize((188, 188))
-    img.paste(thumb, (20, CANVAS_SIZE.height - 208))
+    thumbnail = Image.open(thumbnail)
+    thumbnail = thumbnail.resize((180, 180))
+    img.paste(thumbnail, (PADDING, PADDING))
 
-    # desc
-    w, _ = ITextNormal(size=16).getsize(description)
-    avg_width_per_char = w / len(description)
-    width = int((max_width - 200) / avg_width_per_char)
-    description = wrap_and_join(description, width, max_lines=12)
-    canvas.multiline_text(
-        (20 + 188 + 20, CANVAS_SIZE.height - 208),
-        description,
-        fill=CANVAS_GRAY_300,
-        font=ITextNormal(size=16),
-    )
+    canvas = ImageDraw.Draw(img)
 
-    # separation line
+    # separator line
     canvas.line(
-        (20, CANVAS_SIZE.height - 220, CANVAS_SIZE.width - 20, CANVAS_SIZE.height - 220),
-        fill=CANVAS_GRAY_700,
-        width=2,
+        (195 + PADDING, 15 + PADDING, 195 + PADDING, 165 + PADDING),
+        fill=border_colour,
+        width=3,
     )
 
-    # author and time
+    # title text
+    font = TextBold(size=28)
+    text = wrap_and_join(title, characters=40, max_lines=2)
+    canvas.multiline_text(
+        (207 + PADDING, 20 + PADDING),
+        text,
+        font=font,
+        fill=text_colour,
+    )
+    _, y_offset = font.getsize_multiline(text)
+
+    # summary text
+    font = ITextNormal(size=23)
+    fill = RGBA(text_colour.red, text_colour.green, text_colour.blue, 150)
+    text = wrap_and_join(summary, characters=55, max_lines=2)
+    canvas.text(
+        (207 + PADDING, 40 + y_offset + PADDING),
+        f"\"{text}\"",
+        font=font,
+        fill=fill,
+    )
+
+    # description text
+    font = TextNormal(size=24)
+    text = wrap_and_join(description, characters=65, max_lines=5)
+    canvas.multiline_text(
+        (0 + PADDING, 190 + PADDING),
+        text,
+        font=font,
+        fill=text_colour,
+    )
+
+    # time and author
+    size = 20
+    h_adjust = 10
+    font = ITextSemibold(size=size)
+    w, h = font.getsize(author)
+    canvas.text(
+        (CANVAS_SIZE.width - w - PADDING, CANVAS_SIZE.height - h_adjust - h),
+        author,
+        fill=border_colour,
+        font=font
+    )
+    font = ITextNormal(size=size)
+    w2, _ = font.getsize("By")
+    w_total = w + w2
+    canvas.text((
+        CANVAS_SIZE.width - w_total - 5 - PADDING, CANVAS_SIZE.height - h_adjust - h),
+        "By",
+        font=font,
+    )
+
     ts = datetime.utcnow().strftime('%B, %d %Y %I:%M%p GMT')
     ts = f"{ts} - "
-    font = TextNormal(size=14)
-    w, _ = font.getsize(ts)
-    canvas.text((20, CANVAS_SIZE.height - 245), ts, font=font)
-
-    font = ITextNormal(size=14)
-    w2, _ = font.getsize("By")
-    canvas.text((20 + w + 5, CANVAS_SIZE.height - 245), "By", font=font)
-
-    font = ITextSemibold(size=14)
+    font = TextNormal(size=size)
+    w3, _ = font.getsize(ts)
+    w_total = w + w2 + w3
     canvas.text(
-        (20 + w + w2 + 10, CANVAS_SIZE.height - 245),
-        author,
-        fill=CANVAS_CRUNCHYROLL_COLOUR,
-        font=font
+        (CANVAS_SIZE.width - w_total - 10 - PADDING, CANVAS_SIZE.height - h_adjust - h),
+        ts,
+        font=font,
     )
 
     buffer = BytesIO()
@@ -107,14 +118,17 @@ def render_news(
 
 
 if __name__ == '__main__':
-    with open("../resources/images/news.png", "rb") as file:
+    with open("../resources/images/test.png", "rb") as file:
         buff = BytesIO()
         buff.write(file.read())
 
     img_ = render_news(
-        title="FEATURE: It's Hime's Birthday! Here's Some Of Her Top Anime Recs",
-        summary="Registered to the new Crunchyroll site on June 15",
-        author="Daryl Harding",
+        title="Crunchyroll Adds Farewell, My Dear Cramer: First Touch Prequel Anime Film",
+        summary="Premieres tonight 6/10 at 9PM PDT",
+        author="Humberto Saabedra",
         thumbnail=buff,
-        description="After some discussion with Mark in the comments on my first answer, I decided to make another solution using OpenCV and NumPy, which is able to easily feed some real images, e.g. photos, to the method and get the image including a border with rounded corners, and transparency outside the border! new website experience by default. Hit the jump to read more about the new Crunchyroll website experience!"
+        description="Crunchyroll is excited to announce the addition of the prequel film to the My Dear Cramer TV anime, Farewell, My Dear Cramer: First Touch. Read on for the details."
     )
+
+    img_ = Image.open(img_, formats=["PNG"])
+    img_.save("foo.png")

@@ -1,4 +1,5 @@
 from typing import List
+from enum import Enum
 from pydantic import BaseModel
 from pydantic.types import constr, conint
 
@@ -28,6 +29,22 @@ class NewsContext(BaseModel):
                 "thumbnail": "https://img1.ak.crunchyroll.com/i/spire4/b65773eead0332e03d11e82a44a5e3771622768400_thumb.jpg"
             }
         }
+
+
+class ProfileType(Enum):
+    general = "general"
+    mal = "mal"
+    anilist = "anilist"
+
+
+class GeneralProfile(BaseModel):
+    watchlist_count: conint(ge=0)
+    favourites_count: conint(ge=0)
+    collected_characters: conint(ge=0)
+
+
+class ProfileContext(BaseModel):
+    ...
 
 
 class ImageResponse(BaseModel):

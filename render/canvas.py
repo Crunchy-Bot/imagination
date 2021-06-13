@@ -4,18 +4,18 @@ from functools import partial
 
 
 CanvasSpec = namedtuple("CanvasSpec", ["width", "height"])
-RGB = namedtuple("RGB", ["red", "green", "blue"])
+RGBA = namedtuple("RGB", ["red", "green", "blue", "alpha"])
 
-CANVAS_SIZE = CanvasSpec(700, 344)
-CANVAS_BASE_COLOUR = RGB(17, 24, 39)
-CANVAS_CRUNCHYROLL_COLOUR = RGB(232, 126, 21)
-CANVAS_CRUNCHYROLL_BRIGHT_COLOUR = RGB(255, 153, 0)
-CANVAS_WHITE = RGB(255, 255, 255)
-CANVAS_GRAY_300 = RGB(209, 213, 219)
-CANVAS_GRAY_400 = RGB(156, 163, 175)
-CANVAS_GRAY_700 = RGB(55, 65, 81)
+CANVAS_SIZE = CanvasSpec(760, 400)
+CANVAS_BASE_COLOUR = RGBA(47, 49, 54, 255)
+CANVAS_CRUNCHYROLL_COLOUR = RGBA(232, 126, 21, 255)
+CANVAS_CRUNCHYROLL_BRIGHT_COLOUR = RGBA(255, 153, 0, 255)
+CANVAS_WHITE = RGBA(255, 255, 255, 255)
+CANVAS_GRAY_300 = RGBA(209, 213, 219, 255)
+CANVAS_GRAY_400 = RGBA(156, 163, 175, 255)
+CANVAS_GRAY_700 = RGBA(55, 65, 81, 255)
 
-RESOURCES_FOLDER = "./resources/"
+RESOURCES_FOLDER = "../resources/"
 
 STAR: Image.Image = Image.open(f"{RESOURCES_FOLDER}/images/star.png").resize((20, 20))
 
@@ -32,7 +32,7 @@ ITextSemibold = partial(_BaseFont, f"{RESOURCES_FOLDER}/Arial/Roboto-MediumItali
 ITextBold = partial(_BaseFont, f"{RESOURCES_FOLDER}/Arial/Roboto-BoldItalic.ttf")
 
 
-def get_canvas() -> Image.Image:
+def get_canvas(colour: RGBA = CANVAS_BASE_COLOUR) -> Image.Image:
     """ creates a canvas with the constant defaults """
-    return Image.new("RGB", CANVAS_SIZE, color=CANVAS_BASE_COLOUR)
+    return Image.new("RGBA", CANVAS_SIZE, color=colour)
 
