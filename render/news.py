@@ -29,7 +29,6 @@ def render_news(
     text_colour: RGBA = CANVAS_WHITE,
     border_colour: RGBA = CANVAS_CRUNCHYROLL_COLOUR,
 ) -> BytesIO:
-
     PADDING = 5
     img = get_canvas(colour=background_colour)
 
@@ -131,4 +130,4 @@ if __name__ == '__main__':
     )
 
     img_ = Image.open(img_, formats=["PNG"])
-    img_.save("foo.png")
+    img_.show("foo.png")
