@@ -16,7 +16,7 @@ CANVAS_GRAY_300 = RGBA(209, 213, 219, 255)
 CANVAS_GRAY_400 = RGBA(156, 163, 175, 255)
 CANVAS_GRAY_700 = RGBA(55, 65, 81, 255)
 
-RESOURCES_FOLDER = "../resources/"
+RESOURCES_FOLDER = "./resources/"
 
 STAR: Image.Image = Image.open(f"{RESOURCES_FOLDER}/images/star.png")
 _BaseFont = partial(ImageFont.truetype)
