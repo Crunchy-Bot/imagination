@@ -4,6 +4,7 @@ import uvicorn
 import os
 import aiohttp
 import typing
+import requests
 
 from base64 import standard_b64encode
 from io import BytesIO
@@ -23,7 +24,7 @@ HOST = os.getenv("HOST", "127.0.0.1")
 PORT = int(os.getenv("PORT", 5000))
 
 
-pool = ThreadPoolExecutor()
+pool = ThreadPoolExecutor(max_workers=10)
 session: typing.Optional[aiohttp.ClientSession] = None
 app = FastAPI(
     title="Crunchy Image Render",
@@ -31,6 +32,28 @@ app = FastAPI(
     docs_url=None,
     redoc_url="/"
 )
+
+
+def run_callback_then_submit(cb) -> str:
+    buff = cb()
+    buff = standard_b64encode(buff.read()).decode('utf-8')
+
+    payload = {
+        "format": "png",
+        "data": buff,
+        "category": "news",
+    }
+
+    r = requests.post(
+        "https://images.crunchy.gg/admin/create/image",
+        json=payload,
+        headers={"Authorization": API_KEY}
+    )
+    r.raise_for_status()
+
+    data = r.json()['data']
+
+    return data['file_id']
 
 
 async def ensure_session():
@@ -44,109 +67,93 @@ async def ensure_session():
     response_model=ImageResponse,
     description="Creates a news image with the provided payload.",
 )
-async def create_news(payload: NewsContext):
+async def create_news(payload: NewsItems):
     await ensure_session()
 
-    r = await session.get(payload.thumbnail)
+    ctx = payload.ctx
+    r = await session.get(ctx.thumbnail)
     r.raise_for_status()
-
-    buff = BytesIO()
-    buff.write(await r.read())
+    buff = await r.read()
 
     cb = partial(
         render_news,
-        title=payload.title,
-        summary=payload.summary,
-        author=payload.author,
+        title=ctx.title,
+        summary=ctx.summary,
+        author=ctx.author,
         thumbnail=buff,
-        description=payload.brief,
-        background_colour=RGBA(*payload.colours.background_colour),
-        text_colour=RGBA(*payload.colours.text_colour),
-        border_colour=RGBA(*payload.colours.border_colour),
+        description=ctx.brief,
     )
 
     start = perf_counter()
+    tasks = {}
     loop = asyncio.get_running_loop()
-    image = await loop.run_in_executor(pool, cb)
+
+    for colour_set in payload.items:
+        caller = partial(
+            cb,
+            background_colour=RGBA(*colour_set.colours.background_colour),
+            text_colour=RGBA(*colour_set.colours.text_colour),
+            border_colour=RGBA(*colour_set.colours.border_colour),
+        )
+        t = loop.run_in_executor(pool, run_callback_then_submit, caller)
+        tasks[colour_set.id] = t
+    await asyncio.gather(*tasks.values())
     stop = perf_counter() - start
 
-    buff = standard_b64encode(image.read()).decode('utf-8')
-
-    payload = {
-        "format": "png",
-        "data": buff,
-        "category": "news",
+    urls = {
+        id_: f"{BASE_IMAGE_URL}/news/{await fut}"
+        for id_, fut in tasks.items()
     }
 
-    r = await session.post(
-        "https://images.crunchy.gg/admin/create/image",
-        json=payload,
-        headers={"Authorization": API_KEY}
-    )
-    r.raise_for_status()
-
-    data = (await r.json())['data']
-
-    file_id = data['file_id']
-    url = f"{BASE_IMAGE_URL}/news/{file_id}"
-
     return ImageResponse(
-        url=url,
+        renders=urls,
         message=f"Success! Rendered in {stop * 1000}ms"
     )
 
 
 @app.post("/create/release")
-async def create_release(payload: ReleaseContext):
+async def create_release(payload: ReleaseItems):
     await ensure_session()
 
-    r = await session.get(payload.thumbnail)
+    ctx = payload.ctx
+    r = await session.get(ctx.thumbnail)
     r.raise_for_status()
-
-    buff = BytesIO()
-    buff.write(await r.read())
+    buff = await r.read()
 
     cb = partial(
         render_release,
-        title=payload.title,
-        episode_title=payload.episode_title,
-        episode=payload.episode,
-        rating=payload.rating,
-        tags=payload.tags,
+        title=ctx.title,
+        episode_title=ctx.episode_title,
+        episode=ctx.episode,
+        rating=ctx.rating,
+        tags=ctx.tags,
         thumbnail=buff,
-        description=payload.description,
-        background_colour=RGBA(*payload.colours.background_colour),
-        text_colour=RGBA(*payload.colours.text_colour),
-        border_colour=RGBA(*payload.colours.border_colour),
+        description=ctx.description,
     )
 
     start = perf_counter()
+    tasks = {}
     loop = asyncio.get_running_loop()
-    image = await loop.run_in_executor(pool, cb)
+
+    for colour_set in payload.items:
+        caller = partial(
+            cb,
+            background_colour=RGBA(*colour_set.colours.background_colour),
+            text_colour=RGBA(*colour_set.colours.text_colour),
+            border_colour=RGBA(*colour_set.colours.border_colour),
+        )
+        t = loop.run_in_executor(pool, run_callback_then_submit, caller)
+        tasks[colour_set.id] = t
+    await asyncio.gather(*tasks.values())
     stop = perf_counter() - start
 
-    buff = standard_b64encode(image.read()).decode('utf-8')
-
-    payload = {
-        "format": "png",
-        "data": buff,
-        "category": "release",
+    urls = {
+        id_: f"{BASE_IMAGE_URL}/release/{await fut}"
+        for id_, fut in tasks.items()
     }
 
-    r = await session.post(
-        "https://images.crunchy.gg/admin/create/image",
-        json=payload,
-        headers={"Authorization": API_KEY}
-    )
-    r.raise_for_status()
-
-    data = (await r.json())['data']
-
-    file_id = data['file_id']
-    url = f"{BASE_IMAGE_URL}/release/{file_id}"
-
     return ImageResponse(
-        url=url,
+        renders=urls,
         message=f"Success! Rendered in {stop * 1000}ms"
     )
 

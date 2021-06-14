@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from render.canvas import (
     CANVAS_BASE_COLOUR,
     CANVAS_WHITE,
@@ -22,6 +22,11 @@ class Colours(BaseModel):
 COLOURS_DEFAULT = Colours()
 
 
+class ColourSpec(BaseModel):
+    id: str
+    colours: Colours = COLOURS_DEFAULT
+
+
 class ReleaseContext(BaseModel):
     title: constr(strip_whitespace=True, curtail_length=150)
     episode_title: constr(strip_whitespace=True, curtail_length=50)
@@ -30,7 +35,11 @@ class ReleaseContext(BaseModel):
     description: constr(strip_whitespace=True, curtail_length=300)
     thumbnail: str
     tags: List[constr(strip_whitespace=True, curtail_length=20)]
-    colours: Colours = COLOURS_DEFAULT
+
+
+class ReleaseItems(BaseModel):
+    ctx: ReleaseContext
+    items: List[ColourSpec]
 
 
 class NewsContext(BaseModel):
@@ -39,7 +48,11 @@ class NewsContext(BaseModel):
     author: constr(strip_whitespace=True, curtail_length=50)
     brief: constr(strip_whitespace=True, curtail_length=300)
     thumbnail: str
-    colours: Colours = COLOURS_DEFAULT
+
+
+class NewsItems(BaseModel):
+    ctx: NewsContext
+    items: List[ColourSpec]
 
 
 class ProfileType(Enum):
@@ -59,5 +72,5 @@ class ProfileContext(BaseModel):
 
 
 class ImageResponse(BaseModel):
-    url: str
+    renders: Dict[str, str]
     message: str

@@ -23,7 +23,7 @@ def render_news(
     title: str,
     summary: str,
     author: str,
-    thumbnail: BytesIO,
+    thumbnail: bytes,
     description: str,
     background_colour: RGBA = CANVAS_BASE_COLOUR,
     text_colour: RGBA = CANVAS_WHITE,
@@ -33,6 +33,7 @@ def render_news(
     img = get_canvas(colour=background_colour)
 
     # thumbnail
+    thumbnail = BytesIO(thumbnail)
     thumbnail = Image.open(thumbnail)
     thumbnail = thumbnail.resize((180, 180))
     img.paste(thumbnail, (PADDING, PADDING))
