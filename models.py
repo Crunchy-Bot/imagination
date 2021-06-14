@@ -1,15 +1,36 @@
-from typing import List
+from typing import List, Tuple
+from render.canvas import (
+    CANVAS_BASE_COLOUR,
+    CANVAS_WHITE,
+    CANVAS_CRUNCHYROLL_COLOUR,
+)
 from enum import Enum
 from pydantic import BaseModel
 from pydantic.types import constr, conint
 
 
+ColourLimit = conint(ge=0, le=255)
+_RGBA = Tuple[ColourLimit, ColourLimit, ColourLimit, ColourLimit]
+
+
+class Colours(BaseModel):
+    background_colour: _RGBA = tuple(CANVAS_BASE_COLOUR)
+    text_colour: _RGBA = tuple(CANVAS_WHITE)
+    border_colour: _RGBA = tuple(CANVAS_CRUNCHYROLL_COLOUR)
+
+
+COLOURS_DEFAULT = Colours()
+
+
 class ReleaseContext(BaseModel):
     title: constr(strip_whitespace=True, curtail_length=150)
+    episode_title: constr(strip_whitespace=True, curtail_length=50)
     episode: int
-    stars: conint(ge=0)
+    rating: conint(ge=0)
     description: constr(strip_whitespace=True, curtail_length=300)
     thumbnail: str
+    tags: List[constr(strip_whitespace=True, curtail_length=20)]
+    colours: Colours = COLOURS_DEFAULT
 
 
 class NewsContext(BaseModel):
@@ -18,17 +39,7 @@ class NewsContext(BaseModel):
     author: constr(strip_whitespace=True, curtail_length=50)
     brief: constr(strip_whitespace=True, curtail_length=300)
     thumbnail: str
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "title": "FEATURE: It's Hime's Birthday! Here's Some Of Her Top Anime Recs",
-                "summary": "It's Crunchyroll-Hime's birthday, let's celebrate with these awesome anime",
-                "author": "Brianna Albert",
-                "brief": "It's Hime's birthday! From Tokyo Revengers to So I'm A Spider, So What, here are some recs that'll keep you on your feet!",
-                "thumbnail": "https://img1.ak.crunchyroll.com/i/spire4/b65773eead0332e03d11e82a44a5e3771622768400_thumb.jpg"
-            }
-        }
+    colours: Colours = COLOURS_DEFAULT
 
 
 class ProfileType(Enum):

@@ -12,6 +12,7 @@ from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
+from render.canvas import RGBA
 from render.release import render_release
 from render.news import render_news
 from models import *
@@ -59,6 +60,9 @@ async def create_news(payload: NewsContext):
         author=payload.author,
         thumbnail=buff,
         description=payload.brief,
+        background_colour=RGBA(*payload.colours.background_colour),
+        text_colour=RGBA(*payload.colours.text_colour),
+        border_colour=RGBA(*payload.colours.border_colour),
     )
 
     start = perf_counter()
@@ -105,9 +109,15 @@ async def create_release(payload: ReleaseContext):
     cb = partial(
         render_release,
         title=payload.title,
-        stars=payload.stars,
+        episode_title=payload.episode_title,
+        episode=payload.episode,
+        rating=payload.rating,
+        tags=payload.tags,
         thumbnail=buff,
         description=payload.description,
+        background_colour=RGBA(*payload.colours.background_colour),
+        text_colour=RGBA(*payload.colours.text_colour),
+        border_colour=RGBA(*payload.colours.border_colour),
     )
 
     start = perf_counter()
