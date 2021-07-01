@@ -66,7 +66,7 @@ def render_release(
     # episode number and title
     y = 40 + PADDING + y_offset
     font = TextBold(size=20)
-    episode_render_text = f"Episode {episode} - "
+    episode_render_text = f"Episode {episode} - " if episode_title else f"Episode {episode}"
     canvas.text(
         (X_ALIGN, y),
         episode_render_text,
@@ -79,7 +79,7 @@ def render_release(
     fill = RGBA(text_colour.red, text_colour.green, text_colour.blue, 150)
     canvas.text(
         (X_ALIGN + x_offset + 2, y),  # +2px for padding correction
-        f"\"{episode_title}\"",
+        f"\"{episode_title}\"" if episode_title else "",
         fill=fill,
         font=font,
     )
