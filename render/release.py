@@ -33,7 +33,7 @@ def render_release(
     text_colour: RGBA = CANVAS_WHITE,
     border_colour: RGBA = CANVAS_CRUNCHYROLL_COLOUR,
 ) -> BytesIO:
-    PADDING = 5
+    PADDING = 6
     img = get_canvas(colour=background_colour)
 
     # thumbnail
