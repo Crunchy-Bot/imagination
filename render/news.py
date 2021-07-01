@@ -29,7 +29,7 @@ def render_news(
     text_colour: RGBA = CANVAS_WHITE,
     border_colour: RGBA = CANVAS_CRUNCHYROLL_COLOUR,
 ) -> BytesIO:
-    PADDING = 5
+    PADDING = 6
     img = get_canvas(colour=background_colour)
 
     # thumbnail
@@ -60,8 +60,8 @@ def render_news(
 
     # summary text
     font = ITextNormal(size=23)
-    fill = RGBA(text_colour.red, text_colour.green, text_colour.blue, 150)
-    text = wrap_and_join(summary, characters=55, max_lines=2)
+    fill = RGBA(text_colour.red, text_colour.green, text_colour.blue, 120)
+    text = wrap_and_join(summary, characters=50, max_lines=2)
     canvas.text(
         (207 + PADDING, 40 + y_offset + PADDING),
         f"\"{text}\"",
