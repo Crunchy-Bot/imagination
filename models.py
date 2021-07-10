@@ -12,6 +12,7 @@ class ReleaseContext(BaseModel):
     description: constr(strip_whitespace=True, curtail_length=300)
     thumbnail: str
     tags: List[constr(strip_whitespace=True, curtail_length=20)]
+    crunchyroll: bool
 
 
 class NewsContext(BaseModel):

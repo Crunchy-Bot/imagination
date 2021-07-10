@@ -126,6 +126,7 @@ async def create_release(ctx: ReleaseContext):
         tags=ctx.tags,
         thumbnail=buff,
         description=ctx.description,
+        crunchyroll=ctx.crunchyroll
     )
 
     start = perf_counter()

@@ -3,14 +3,11 @@ from render.canvas import (
     get_canvas,
     CANVAS_CRUNCHYROLL_COLOUR,
     CANVAS_SIZE,
-    CANVAS_GRAY_300,
-    STAR,
-    TextSemibold,
     ITextNormal,
     ITextSemibold,
     RGBA,
     CANVAS_BASE_COLOUR,
-    CANVAS_WHITE, TextBold, get_star, TextNormal,
+    CANVAS_WHITE, TextBold, get_star, TextNormal, CANVAS_FUNIMATION_COLOUR,
 )
 
 from PIL import ImageDraw, Image
@@ -22,17 +19,22 @@ STAR_DELTA = 20
 
 
 def render_release(
-    title: str,
-    episode_title: str,
-    episode: int,
-    rating: int,
-    tags: List[str],
-    thumbnail: bytes,
-    description: str,
-    background_colour: RGBA = CANVAS_BASE_COLOUR,
-    text_colour: RGBA = CANVAS_WHITE,
-    border_colour: RGBA = CANVAS_CRUNCHYROLL_COLOUR,
+        title: str,
+        episode_title: str,
+        episode: int,
+        rating: int,
+        tags: List[str],
+        thumbnail: bytes,
+        description: str,
+        crunchyroll: bool,
+        background_colour: RGBA = CANVAS_BASE_COLOUR,
+        text_colour: RGBA = CANVAS_WHITE,
 ) -> BytesIO:
+    if crunchyroll:
+        border_colour = CANVAS_CRUNCHYROLL_COLOUR
+    else:
+        border_colour = CANVAS_FUNIMATION_COLOUR
+
     PADDING = 6
     img = get_canvas(colour=background_colour)
 
