@@ -49,7 +49,7 @@ def render_news(
 
     # title text
     font = TextBold(size=28)
-    text = wrap_and_join(title, characters=40, max_lines=2)
+    text = wrap_and_join(title, characters=38, max_lines=2)
     canvas.multiline_text(
         (207 + PADDING, 20 + PADDING),
         text,
