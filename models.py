@@ -6,7 +6,7 @@ from pydantic.types import constr, conint
 
 class ReleaseContext(BaseModel):
     title: constr(strip_whitespace=True, curtail_length=150)
-    episode_title: constr(strip_whitespace=True, curtail_length=50)
+    episode_title: constr(strip_whitespace=True, curtail_length=50) = ""
     episode: int
     rating: conint(ge=0)
     description: constr(strip_whitespace=True, curtail_length=300)
