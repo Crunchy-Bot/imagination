@@ -130,7 +130,7 @@ def render_release(
     # description
     y = y + 40
     font = ITextNormal(size=20)
-    fill = RGBA(text_colour.red, text_colour.green, text_colour.blue, 120)
+    fill = RGBA(text_colour.red, text_colour.green, text_colour.blue, 200)
     description = wrap_and_join(description, characters=50, max_lines=5)
     canvas.multiline_text(
         (X_ALIGN, y),
@@ -139,7 +139,7 @@ def render_release(
         font=font,
     )
 
-    # time and author
+    # time
     size = 18
     h_adjust = 30
 
